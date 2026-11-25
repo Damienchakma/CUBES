@@ -1,0 +1,59 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/vela-core",
+    "crates/vela-ecs",
+    "crates/vela-scene",
+    "crates/vela-platform",
+    "crates/vela-renderer",
+    "crates/vela-assets",
+    "crates/vela-scripting",
+    "crates/vela-mcp",
+    "apps/vela-cli",
+    "apps/vela-editor",
+    "apps/vela-runtime",
+    "benchmarks/vela-bench",
+]
+
+[workspace.package]
+version = "0.1.0-dev"
+edition = "2024"
+rust-version = "1.95"
+license = "MIT"
+
+[workspace.dependencies]
+vela-core = { path = "crates/vela-core" }
+vela-scene = { path = "crates/vela-scene" }
+vela-platform = { path = "crates/vela-platform" }
+vela-renderer = { path = "crates/vela-renderer" }
+vela-assets = { path = "crates/vela-assets" }
+vela-scripting = { path = "crates/vela-scripting" }
+
+anyhow = "1.0.105"
+bytemuck = { version = "1.25.2", features = ["derive"] }
+clap = { version = "4.6.9", features = ["derive"] }
+egui = { version = "0.37.0", features = ["default_fonts"] }
+egui-wgpu = "0.37.0"
+egui-winit = "0.37.0"
+env_logger = "0.11.8"
+glam = { version = "0.34.3", features = ["serde"] }
+gltf = { version = "1.4.1", features = ["import", "utils"] }
+image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "webp"] }
+log = "0.4.28"
+mlua = { version = "0.12.3", features = ["lua54", "vendored"] }
+pollster = "1.0.3"
+rmcp = { version = "3.11.0", features = ["server", "macros", "transport-io"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+sha2 = "0.10.9"
+thiserror = "2.0.21"
+tokio = { version = "1.48.0", features = ["rt-multi-thread", "macros", "io-std", "fs"] }
+wgpu = "30.0.2"
+winit = "0.30.12"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"

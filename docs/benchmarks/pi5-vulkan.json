@@ -1,0 +1,63 @@
+{
+  "adapter": {
+    "architecture": "aarch64",
+    "backend": "Vulkan",
+    "device": "0x55701c33",
+    "deviceType": "IntegratedGpu",
+    "driver": "V3DV Mesa",
+    "name": "V3D 7.1.7.0",
+    "vendor": "0x14e4"
+  },
+  "configuration": {
+    "backend": "Vulkan",
+    "frames": 300,
+    "height": 720,
+    "instances": 512,
+    "presentation": "offscreen; measured CPU encoding plus GPU completion",
+    "warmupFrames": 30,
+    "width": 1280
+  },
+  "hardware": {
+    "board": "Raspberry Pi 5 Model B Rev 1.0",
+    "cpu": {
+      "architecture": "aarch64",
+      "features": [
+        "asimd",
+        "aes",
+        "sha2",
+        "crc32",
+        "atomics",
+        "fphp",
+        "asimdhp"
+      ],
+      "logicalCores": 4,
+      "model": "Unknown ARM CPU"
+    },
+    "graphics": {
+      "driver": "vc4/v3d",
+      "drmRenderNode": "/dev/dri/renderD128",
+      "model": "Integrated GPU",
+      "preferredApi": "vulkan",
+      "vulkanIcdPresent": true
+    },
+    "memory": {
+      "availableBytes": 3043885056,
+      "totalBytes": 8450932736
+    },
+    "os": "PRETTY_NAME=\"Kali GNU/Linux Rolling\"\nNAME=\"Kali GNU/Linux\"\nVERSION_ID=\"2026.2\"\nVERSION=\"2026.2\"\nVERSION_CODENAME=kali-rolling\nID=kali\nID_LIKE=debian\nHOME_URL=\"https://www.kali.org/\"\nSUPPORT_URL=\"https://forums.kali.org/\"\nBUG_REPORT_URL=\"https://bugs.kali.org/\"\nANSI_COLOR=\"1;31\"",
+    "recommendedQuality": "balanced",
+    "thermal": {
+      "temperatureCelsius": 82.05000305175781,
+      "throttlingDetected": true,
+      "warning": "CPU temperature is 82.1°C; sustained rendering should reduce quality"
+    }
+  },
+  "results": {
+    "averageFrameMilliseconds": 39.51241660666665,
+    "drawCalls": 5,
+    "instances": 512,
+    "p95FrameMilliseconds": 78.04784400000001,
+    "throughputFramesPerSecond": 25.308500109084118,
+    "triangles": 50944
+  }
+}

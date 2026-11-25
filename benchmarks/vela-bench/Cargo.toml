@@ -1,0 +1,21 @@
+[package]
+name = "vela-bench"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "vela-bench"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+glam.workspace = true
+pollster.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+vela-platform.workspace = true
+vela-renderer.workspace = true
+vela-scene.workspace = true
+wgpu.workspace = true

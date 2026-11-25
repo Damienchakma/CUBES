@@ -1,0 +1,23 @@
+[package]
+name = "vela-runtime"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "vela-runtime"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+env_logger.workspace = true
+glam.workspace = true
+log.workspace = true
+pollster.workspace = true
+wgpu.workspace = true
+winit.workspace = true
+vela-core.workspace = true
+vela-renderer.workspace = true
+vela-scene.workspace = true
+vela-scripting.workspace = true
