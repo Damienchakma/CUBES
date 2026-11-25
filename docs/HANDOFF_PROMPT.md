@@ -1,156 +1,158 @@
-# Handoff prompt for continuing CUBES
+# Full CUBES handoff prompt
 
-Historical prompt from before the CUBES rename. For the current state, read
-[CUBES_ASSESSMENT.md](CUBES_ASSESSMENT.md) and [STATUS.md](STATUS.md) first.
-
-Copy everything below this line into another AI session.
+Copy everything below the divider into another AI session. This is the current state as of 2026-11-25.
 
 ---
 
-You are continuing an already implemented Rust game-engine project called **CUBES**. Work in `/home/damien/Documents/Default Project` on a Raspberry Pi 5. Do not restart from a proposal; continue the existing workspace. Keep changes minimal but complete, compile and test continuously, and never claim a feature works unless it was actually run or tested. Update `docs/STATUS.md` honestly whenever feature status changes. The user prefers clear, concise progress and dislikes fake/placeholder claims. A "ponytail" senior-dev style was requested earlier: smallest complete change, no unnecessary abstraction, no features nobody asked for.
+You are continuing an existing Rust project called **CUBES** at `/home/damien/Documents/Default Project`. Do not restart it, discard working code, replace the architecture unnecessarily, or stop at a proposal. Inspect the workspace, preserve working systems, and implement improvements incrementally. Keep changes minimal but complete, compile and test continuously, and never claim a feature works unless it was actually run or tested. Update `docs/STATUS.md` honestly whenever feature status changes.
 
-## Hard project rules
+A "ponytail" senior-dev style was requested: smallest complete change, no unnecessary abstraction, no features nobody asked for. The user prefers clear, concise progress and dislikes fake or placeholder claims.
 
-- Primary target: Raspberry Pi 5 Model B Rev 1.0, Kali GNU/Linux Rolling 2026.2, aarch64, kernel `6.12.34+rpt-rpi-2712`, 8 GiB RAM, X11 `DISPLAY=:0.0`.
+## Hard rules
+
+- Primary target: Raspberry Pi 5 Model B Rev 1.0, Kali GNU/Linux Rolling 2026.2, aarch64, kernel `6.12.34+rpt-rpi-2712`, 8 GB RAM, X11 `DISPLAY=:0.0`.
 - Vulkan is preferred and verified through Broadcom V3D; OpenGL is a fallback. Adapter selection must use the actual wgpu surface for windowed apps.
-- No fabricated benchmark results. No claiming multi-SBC, shadows, audio, animation, glTF GPU import, export, or full physics works.
-- MCP must never provide shell/code execution and must sandbox every project path under the configured workspace root.
-- Use `cargo fmt --all` and `cargo test --workspace` after changes.
+- No fabricated benchmark results. No claiming multi-SBC, shadows, audio, animation, full physics, export, or other unimplemented features work.
+- MCP must never provide shell/code execution and must sandbox all project paths under the configured workspace root.
+- Use `cargo fmt --all --check` and `cargo test --workspace` after changes.
+- Ask before destructive Git actions, force pushes, deleting branches, or creating new repositories.
 
-## Toolchain and environment
+## Environment and toolchain
 
-- Rust stable `1.100.0` installed under `~/.cargo`; activate with `. "$HOME/.cargo/env"`.
-- Workspace is **not** a Git repository. No branch or PR exists.
-- OpenCode `browse` 0.1.5 was installed into `~/.local/bin/browse` and connected to the user's Chromium once; it later disconnected. No active agent browser tabs remain.
-- The desktop app has been installed into the user's XFCE application menu; see "Desktop app" below.
+- Rust stable `1.100.0` under `~/.cargo`; activate with `. "$HOME/.cargo/env"`.
+- Git `2.53.0` installed.
+- GitHub CLI `gh 2.105.0` installed at `~/.local/bin/gh`; `~/.local/bin` is already in `~/.zshrc`.
+- Authenticated to GitHub as **Damienchakma** via GitHub CLI browser device login using HTTPS. Git operations are configured through `gh auth setup-git`.
+- Access token expires in about 8 hours but refreshes automatically; refresh token lasts about 6 months. Never print or store tokens in chat or files.
+- Git identity: `Damien <122607828+Damienchakma@users.noreply.github.com>`.
+- Workspace is now a Git repository on branch `main` with remote `origin` at `https://github.com/Damienchakma/CUBES.git`.
+- Latest pushed commit at handoff: `5529dbf Initial CUBES implementation: editor, runtime, MCP, assets and docs`.
+- Working tree was clean after the push.
+- `browse` 0.1.5 was installed into `~/.local/bin/browse` and connected to Chromium earlier. Available browser tooling has changed across server restarts; do not assume a browser namespace is present.
 
-## Architecture and key decisions
+## Product identity and compatibility
 
-- Workspace crates:
-  - `crates/vela-core`: project format, atomic JSON writes, canonical sandbox checks.
-  - `crates/vela-scene`: serializable scene graph and components.
-  - `crates/vela-ecs`: compact dense type-specific ECS with generation reuse; tested, but not yet the authoritative runtime world.
-  - `crates/vela-platform`: CPU/memory/thermal/DRM/Vulkan capability probe and quality policy.
-  - `crates/vela-renderer`: wgpu adapter selection, camera, instanced meshes, grid, PBR-style WGSL shader, draw metrics.
-  - `crates/vela-assets`: asset kind detection, SHA-256 checksum, and copy into a project's assets directory.
-  - `crates/vela-scripting`: embedded Lua 5.4 runtime with `on_start` and `on_update`.
-  - `crates/vela-mcp`: rmcp 3.11 stdio MCP server with sandboxed tools/resources/prompts.
-  - `apps/vela-cli`: binary named `vela`; commands `hardware`, `new-project`, `inspect-project`.
-  - `apps/vela-editor`: native winit/wgpu/egui editor.
-  - `apps/vela-runtime`: standalone windowed player with Lua and simple dynamics.
-  - `benchmarks/vela-bench`: deterministic offscreen GPU throughput benchmark.
-- Pinned versions: `wgpu 30.0.2`, `winit 0.30.12` (resolves to 0.30.13), `egui/egui-wgpu/egui-winit 0.37.0`, `glam 0.34.3`, `mlua 0.12.3`, `rmcp 3.11.0`, `tokio 1.x`, `clap 4.6.9`, `sha2 0.10`.
-- Project format: `project.vela.json`, `scenes/main.velascene`, directories `assets/`, `scripts/`, `builds/`, `.vela/`.
-- The editor uses `ApplicationHandler`/`ActiveEventLoop`; do not revert to deprecated `EventLoop::run` or `EventLoop::create_window`.
-- `egui` must keep the `default_fonts` feature; without it all text renders as tofu boxes on the Pi.
-- `MeshComponent::default()` must keep `visible = true`; a derived default made all meshes disappear.
-- Plane geometry must stay wound counter-clockwise from above or back-face culling hides the ground.
-- `GpuContext::from_instance_for_surface(...)` is required for windowed apps so the adapter can present to the surface.
+- User-facing product name is **CUBES**.
+- Internal Rust crate names remain `vela-*` to avoid risky renames.
+- Existing Vela files and integrations remain supported:
+  - `project.vela.json`
+  - `*.velascene`
+  - `vela://` MCP resource URIs
+  - `vela_*` MCP tool names
+  - `Vela Editor (legacy)` desktop launcher
+- Original 3D cube identity exists in `desktop/cubes-dark.svg`, `desktop/cubes-light.svg`, `desktop/cubes-icon-128.png`, and `desktop/cubes-icon-256.png`.
+- Desktop installer creates both `CUBES Editor` and legacy `Vela Editor (legacy)` entries.
 
-## Already completed and verified
+## Workspace overview
+
+- `apps/vela-cli` — binary named `vela`; CLI help shows CUBES; commands `hardware`, `new-project`, `inspect-project`.
+- `apps/vela-editor` — native winit/wgpu/egui editor.
+- `apps/vela-runtime` — standalone windowed player.
+- `benchmarks/vela-bench` — deterministic offscreen GPU benchmark.
+- `crates/vela-core` — project format, atomic JSON, canonical path sandbox.
+- `crates/vela-scene` — serializable scene graph and component schema.
+- `crates/vela-ecs` — compact dense ECS with generation reuse; tested but not authoritative runtime world.
+- `crates/vela-platform` — hardware, DRM, thermal, capability probe and quality policy.
+- `crates/vela-renderer` — wgpu adapter, camera, instanced meshes, grid, shader, glTF import, texture upload.
+- `crates/vela-assets` — asset classification, checksum, and project copy.
+- `crates/vela-scripting` — embedded Lua 5.4 with `on_start`/`on_update`.
+- `crates/vela-mcp` — rmcp 3.11 stdio server with sandboxed tools/resources/prompts.
+
+Major decisions and versions: `wgpu 30.0.2`, `winit 0.30.12` resolving to 0.30.13, `egui/egui-wgpu/egui-winit 0.37.0`, `glam 0.34.3`, `mlua 0.12.3`, `rmcp 3.11.0`, `gltf 1.4.1`, `image 0.25.10`.
+
+## Implemented and tested
 
 ### Editor
 
-- Real X11/Vulkan editor window with resizable side/top/bottom panels, hierarchy, inspector, asset browser, console, profiler, and central 3D viewport.
-- Selection highlights the chosen mesh and populates the inspector.
-- Inspector edits name, visible/locked flags, transform, mesh primitive, material color/metallic/roughness, light type/intensity, camera FOV, and physics mass/friction/restitution/trigger.
-- Hierarchy supports search, add empty/cube/plane/camera/light, visibility toggle, lock toggle, duplicate, delete, and focus.
-- Viewport supports orbit, pan, scroll zoom, `F` focus, `Delete`, play/pause/stop, and a play-mode scene snapshot restored on stop.
-- Vertical orbit direction was inverted after user feedback: `apps/vela-editor/src/ui.rs` now passes `delta.y * 0.008` instead of `-delta.y * 0.008`; a regression test in `apps/vela-editor/src/state.rs` verifies that dragging down moves the orbit camera above the target. The debug binary was rebuilt after this.
-- Project new/open/save works via the modal and `Ctrl+S`; saving during play is blocked.
-- Live screenshot proof: `docs/screenshots/editor.png`.
+- Real X11/Vulkan editor window titled `CUBES Editor`.
+- Resizable hierarchy, inspector, asset browser, console, and profiler panels.
+- First-run welcome window with Create New Game, Open Existing Project, Start From Template, Learn CUBES, and Browse Example Projects (disabled/planned). First-run marker at `~/.config/cubes/welcome-seen`.
+- New project wizard and project open/save using atomic JSON writes.
+- Hierarchy search, add empty/cube/plane/camera/light, visibility/lock toggles, duplicate, delete, focus.
+- Inspector editing for name, flags, transform, mesh primitive and asset, material base colour/metallic/roughness/texture, light, camera, and physics basics.
+- Viewport orbit/pan/zoom, object picking by local-space ray/AABB/ground plane tests, and real Move/Rotate/Scale gizmos.
+- Undo/redo using bounded scene snapshots; toolbar buttons, Edit menu, and Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z.
+- Play/pause/stop with scene snapshot restored on stop; saving disabled during play.
+- Profiler shows real FPS, frame time, draw calls, triangles, instances, and adapter.
 
 ### Runtime
 
-- `apps/vela-runtime/src/main.rs` is a real windowed player, not a placeholder.
-- Opens a project, loads the starter scene, uses the scene camera, loads sorted `scripts/*.lua`, calls `on_start`, calls `on_update(entity, delta)`, and runs simple semi-implicit Euler dynamics for dynamic bodies with floor collision, friction, and restitution.
-- Logs real FPS, draw calls, triangles, and instances every 2 seconds.
-- Verified on Pi 5: about 57–59 FPS on the two-instance starter scene over 12-second runs.
+- Windowed player opens a project and loads `scenes/main.velascene`.
+- Uses the scene camera and clear colour.
+- Loads sorted `scripts/*.lua`, calls `on_start`, then `on_update(entity, delta)`.
+- Simple semi-implicit Euler physics for dynamic bodies with floor collision, friction, and restitution.
+- Lazily loads glTF meshes and textures through `ProjectPaths`.
+- Logs real FPS, draw calls, triangles, and instances every two seconds.
+
+### Renderer and assets
+
+- Vulkan adapter selected with compatible surface on Pi 5: `V3D 7.1.7.0`, `V3DV Mesa`, vendor `0x14e4`, device `0x55701c33`.
+- Instanced renderer groups draws by mesh and texture key, keeping draw calls bounded.
+- PBR-style WGSL shader with GGX direct light, ambient, gamma, texture sampling, and selection emissive.
+- UV-aware mesh format.
+- `load_gltf_mesh` imports first usable glTF 2.0 primitive, bakes first node transform, reads positions/normals/UVs/indices, base colour factor, and base colour texture.
+- External and embedded glTF images are decoded; embedded images are persisted as PNG under project `assets/`.
+- `write_rgba_png` persists decoded RGBA8 textures.
+- `MaterialComponent.base_color_texture` has `#[serde(default)]` for old project compatibility. MaterialComponent is no longer `Copy`.
 
 ### MCP
 
-- `vela-mcp` is a real stdio binary built on rmcp 3.11.
+- `vela-mcp` stdio server built on rmcp 3.11.
 - Tools: `vela_hardware`, `vela_project_info`, `vela_list_entities`, `vela_get_entity`, `vela_list_assets`, `vela_read_asset`, `vela_create_entity`.
 - Resources: `vela://hardware`, `vela://status`, `vela://schema/project`.
-- Prompt: `build-scene` with optional `goal` argument.
-- Sandbox: project path must canonicalize inside MCP workspace root; scene/asset paths use `ProjectPaths`, rejecting absolute paths, `..`, and symlink escapes; asset reads capped at 64 KiB.
-- `crates/vela-mcp/tests/stdio.rs` starts the real binary over stdio and verifies listing, a sandboxed write, and traversal rejection.
+- Prompt: `build-scene` with optional `goal`.
+- Sandbox: project root must canonicalize inside workspace root; scene/asset paths validated; traversal rejected; no shell or arbitrary code execution.
+- Integration test starts the real binary over stdio.
 
-### Assets, scripting, ECS
+### Desktop and docs
 
-- `vela-assets` classifies and checksums files and copies them into a project's `assets/` directory. Unit test verifies checksum preservation after copy.
-- `vela-scripting` was repaired (it had uncompiled dependency/signature bugs) and now has a unit test for `example_script`, `on_start`, and `on_update`.
-- `vela-ecs` has passing tests for component round trip and generation reuse on despawn.
+- `desktop/install-desktop-app.sh` installs CUBES and legacy Vela launchers plus icons.
+- Docs: `README.md`, `docs/ARCHITECTURE.md`, `docs/DEPENDENCIES.md`, `docs/HARDWARE.md`, `docs/TUTORIAL.md`, `docs/MCP.md`, `docs/BENCHMARKS.md`, `docs/STATUS.md`, `docs/CUBES_ASSESSMENT.md`.
+- Screenshots: welcome, gizmos, imported mesh editor/runtime, textured mesh editor/runtime.
 
-### Hardware and benchmark
+## Validation evidence
 
-- Verified adapter: `V3D 7.1.7.0`, `V3DV Mesa`, vendor `0x14e4`, device `0x55701c33`, Vulkan, render node `/dev/dri/renderD128`.
-- `vela hardware --backend vulkan` works.
-- Benchmark result saved in `docs/benchmarks/pi5-vulkan.json`: 1280×720, 512 instances, 300 measured frames after 30 warmup, average 39.51 ms, 25.31 FPS, p95 78.05 ms, 5 draw calls, 50,944 triangles. Thermal state at run was 82.1 °C with throttling detected. Do not present this as a stable sustained frame budget.
-- Benchmark timing is offscreen CPU encoding plus GPU completion, not GPU timestamp queries or vsynced presentation FPS.
+- `cargo fmt --all --check` passes.
+- `cargo test --workspace` passes. At handoff: 20 unit/integration tests, 0 failures. The `grep` count of `test result: ok` lines included doc-test result lines, so trust the actual test counts, not that count alone.
+- Editor, runtime, CLI, MCP stdio test, and benchmark were run on the Pi 5.
+- Runtime starter scene: about 57–59 FPS.
+- Textured imported mesh runtime: about 58–59 FPS, 3 draw calls, 6 triangles.
+- Benchmark result: `docs/benchmarks/pi5-vulkan.json`: 1280×720, 512 instances, 300 measured frames, average 39.51 ms, 25.31 FPS, p95 78.05 ms, 5 draw calls, 50,944 triangles. Run occurred at 82.1 °C with throttling detected; do not present as stable sustained performance.
+- Desktop entries validated with `desktop-file-validate`.
 
-### Desktop app
+## Important technical gotchas
 
-- User asked for a desktop app. The editor is a native winit/wgpu app; a launcher was added:
-  - Source: `desktop/install-desktop-app.sh`, `desktop/vela-editor.svg`, `desktop/README.md`.
-  - Installed: `~/.local/share/applications/vela-editor.desktop`, `~/.local/share/icons/vela-editor.svg`, `~/.local/bin/vela-editor-desktop`.
-  - Desktop entry validates with `desktop-file-validate`.
-  - Launcher was tested and opened the real `CUBES Editor` window.
-  - Launcher points at `target/debug/vela-editor`; rerun the installer if the workspace moves.
-
-### Documentation written
-
-- `README.md`
-- `docs/ARCHITECTURE.md`
-- `docs/DEPENDENCIES.md`
-- `docs/HARDWARE.md`
-- `docs/TUTORIAL.md`
-- `docs/MCP.md`
-- `docs/BENCHMARKS.md`
-- `docs/STATUS.md`
-- `docs/HANDOFF_PROMPT.md` (this prompt)
-
-## Validation commands that pass
-
-```bash
-. "$HOME/.cargo/env"
-cargo fmt --all --check
-cargo test --workspace
-cargo run -p vela-cli -- hardware --backend vulkan
-cargo run -p vela-cli -- new-project /tmp/vela-demo "CUBES Demo"
-cargo run -p vela-editor -- --project /tmp/vela-demo
-cargo run -p vela-runtime -- /tmp/vela-demo
-cargo run -p vela-mcp -- "$PWD"
-cargo run --release -p vela-bench -- --instances 512 --frames 300 --backend vulkan
-desktop/install-desktop-app.sh
-```
-
-`cargo test --workspace` passes cleanly with no compiler warnings. Current tests cover assets, core, ECS, editor state, MCP stdio, platform, renderer meshes, scene, and scripting.
+- `egui` must keep the `default_fonts` feature or all text renders as boxes.
+- `MeshComponent::default()` must keep `visible = true`; a derived default once made every mesh invisible.
+- Plane geometry must stay wound counter-clockwise from above or back-face culling hides the ground.
+- Editor/runtime must use winit `ApplicationHandler`/`ActiveEventLoop`; do not revert to deprecated `EventLoop::run` or `EventLoop::create_window`.
+- Windowed GPU contexts must use `GpuContext::from_instance_for_surface(...)`.
+- Wgpu 30 uses `CurrentSurfaceTexture` enum and `queue.present(frame)`; `queue.submit([encoder.finish()])`.
+- `MaterialComponent` is clone-but-not-copy because it owns a texture path string.
+- `base_color_texture` uses serde default for old project compatibility.
+- Texture rows use `Rgba8UnormSrgb`, a texture bind group, and a white default texture.
+- glTF test fixtures must use `f32` literals and correct bufferView byte offsets; earlier failures came from `f64` position arrays and misordered UV/index data.
+- `CUBES_SELECT=<id>`, `CUBES_TOOL=rotate|scale`, and `CUBES_MESH_ASSET=assets/model.gltf` are hidden debug environment shortcuts in the editor; upgrade to proper command flags if exposed to users.
 
 ## Known gaps / do not claim as working
 
-- No second SBC was available, so multi-SBC compatibility is not verified.
-- No shadow maps, audio playback, animation, terrain, skeletal meshes, or GPU texture/model upload from imported assets.
-- glTF/OBJ files are classified, checksummed, and copied but not rendered.
-- Physics is only a simple dynamic floor solver; no arbitrary colliders or body-to-body interactions.
-- No true drag-docking; panels are resizable but fixed to sides.
-- No transform gizmos; transforms are edited numerically in the inspector.
-- No build/export/package pipeline beyond raw project directories.
-- No GPU timestamp profiling; profiler uses rolling frame times and renderer draw metrics.
-- No `.deb`, `.AppImage`, auto-update, or system-wide desktop install.
+- No second SBC tested.
+- No shadows, ambient occlusion, post-processing, advanced ray tracing, audio, particles, terrain, skeletal meshes, or animation editor.
+- No normal/ORM maps, texture compression, glTF skins, animation tracks, FBX, or formal import report UI.
+- No visual scripting, node editor, input mapping, reusable gameplay controllers, prefabs, navigation, UI authoring, or localization.
+- No standalone export/packaging, no `.deb`/`.AppImage`, no Windows/macOS builds.
+- No true drag-docking, beginner/advanced UI modes, gizmo snapping, multi-selection, or examples gallery.
+- Physics is only a simple dynamic floor solver.
+- Undo is snapshot-based, not command-based; MCP mutations do not yet enter the editor undo history.
 
-## Suggested next work, in priority order
+## Next coherent milestone
 
-1. Ask the user what to build next; do not assume. If they want more editor usability, add real transform gizmos and click-picking in the viewport.
-2. If they want asset work, implement GPU texture upload and glTF/OBJ mesh loading instead of merely classifying files.
-3. If they want gameplay, extend the runtime ECS/physics: velocity components, multiple colliders, static/kinematic bodies, and Lua-exposed transform APIs.
-4. If they want tooling, extend MCP with read-only scene queries for components/materials and safe scene mutation tools, keeping the no-shell rule.
-5. If they want performance, add GPU timestamp queries where supported and run a cooled/repeated benchmark matrix, recording every result honestly.
-6. If they want portability, obtain a second SBC and verify Vulkan/GL fallback there before changing status.
+**Milestone 3, first slice: reusable gameplay systems.**
 
-## Current exact state at handoff
+Start with a real first-person controller and input mapping, then expose transform and input APIs to Lua so beginner templates can be built on the same public systems. Do not implement all of Milestone 3 at once; make a small tested increment and update `docs/STATUS.md`.
 
-- The last user request was to fix inverted vertical mouse orbit and provide this handoff prompt.
-- The orbit sign fix is applied, tested, formatted, and the debug editor binary was rebuilt.
-- No source changes after that except `docs/STATUS.md` and this handoff prompt.
-- The workspace is ready for the next instruction.
+Suggested order after that: animation workspace, native export, Roblox/Blender interchange, advanced rendering tiers, cross-platform packaging and fair Godot comparisons.
+
+## Immediate instruction
+
+Inspect the current workspace first, confirm Git status, then continue from Milestone 3 with a small working increment. Do not overwrite or discard existing functionality. Report exactly what changed, what passed, what failed, and what remains incomplete.
